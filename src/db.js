@@ -1,6 +1,12 @@
 import { MongoClient } from "mongodb";
 import dns from "node:dns";
-dns.setServers(["1.1.1.1", "1.0.0.1"]);
+
+// Pinned public resolvers help on networks where the default DNS refuses SRV
+// lookups. Skip it on Vercel/serverless, where the platform resolver is the
+// reliable one.
+if (!process.env.VERCEL) {
+  dns.setServers(["1.1.1.1", "1.0.0.1"]);
+}
 
 // Same database the Next.js Better Auth instance uses, so `user` / `session`
 // collections are shared and the API can validate the session cookie issued
@@ -13,7 +19,9 @@ export async function connect() {
   if (db) return db;
 
   if (!process.env.MONGODB_URI) {
-    throw new Error("MONGODB_URI is missing from studiospace_back_end/.env");
+    throw new Error(
+      "MONGODB_URI is missing from the environment (locally: studiospace_back_end/.env; on Vercel: project Settings → Environment Variables)."
+    );
   }
 
   client = new MongoClient(process.env.MONGODB_URI);

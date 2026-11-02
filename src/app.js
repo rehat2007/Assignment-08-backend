@@ -28,6 +28,29 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN ?? DEFAULT_ORIGINS)
 app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
 app.use(express.json({ limit: "40mb" }));
 
+// Health checks are registered before the database middleware so they answer
+// even when Mongo is unreachable — a 500 here would hide the real cause.
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true, service: "studiospace-api" });
+});
+
+// Diagnostic endpoint: reports whether the deployed function can reach Atlas.
+// Credentials are stripped from the message before it is returned.
+app.get("/api/health/db", async (_req, res) => {
+  try {
+    await connect();
+    res.json({ ok: true, database: process.env.DB_NAME || "studiospace" });
+  } catch (error) {
+    res.status(503).json({
+      ok: false,
+      database: process.env.DB_NAME || "studiospace",
+      hasUri: Boolean(process.env.MONGODB_URI),
+      name: error?.name ?? "Error",
+      message: String(error?.message ?? error).replace(/\/\/[^@/]*@/g, "//***@"),
+    });
+  }
+});
+
 // Connect on the first request instead of at module load. Serverless bundlers
 // handle a synchronously-importable app more reliably than top-level await, and
 // a failed connection can be retried on the next request.
@@ -42,10 +65,6 @@ app.use(async (_req, _res, next) => {
     connectionPromise = null;
     next(error);
   }
-});
-
-app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "studiospace-api" });
 });
 
 app.use("/api/studios", studiosRouter);

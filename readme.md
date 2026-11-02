@@ -371,20 +371,32 @@ Steps:
    | `IMGBB_API_KEY` | optional — enables `/api/uploads` |
 
    Do **not** set `PORT`; Vercel manages the port.
-4. Deploy and note the URL, for example
-   `https://studiospace-backend.vercel.app`.
+4. Deploy. **This project is live at
+   `https://assignment-08-backend-pi.vercel.app`** — redeploy after changing
+   `src/app.js`, routes, or environment variables.
 5. Verify:
 
    ```bash
-   curl https://studiospace-backend.vercel.app/api/health
+   curl https://assignment-08-backend-pi.vercel.app/api/health
    # {"ok":true,"service":"studiospace-api"}
 
-   curl -i https://studiospace-backend.vercel.app/api/wishlist
+   curl https://assignment-08-backend-pi.vercel.app/api/health/db
+   # {"ok":true,"database":"studiospace"}
+   # 503 + hasUri/name/message if Atlas is unreachable
+
+   curl -i https://assignment-08-backend-pi.vercel.app/api/wishlist
    # 401 {"error":"Please sign in to continue."}
    ```
 
+   `/api/health` never touches the database, so a `500` there means the function
+   itself failed. A `200` from `/api/health` plus a `503` from `/api/health/db`
+   means the code is fine but the database is not reachable — check that
+   `MONGODB_URI` is set on **this** Vercel project and that Atlas Network Access
+   allows `0.0.0.0/0`.
+
 6. On the **frontend** Vercel project, set
-   `API_PROXY_TARGET=https://studiospace-backend.vercel.app` and redeploy.
+   `API_PROXY_TARGET=https://assignment-08-backend-pi.vercel.app` and redeploy
+   (production builds already default to this URL, so the variable is optional).
    The frontend proxies `/api/proxy/*` to this URL so the Better Auth cookie
    works despite both apps being on separate `*.vercel.app` domains.
 
