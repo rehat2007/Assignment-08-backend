@@ -341,6 +341,67 @@ Run `npm run seed:demo` first, then sign in with the demo accounts from Step 2.
 
 ---
 
+## Step 10 — Deploy the API on Vercel
+
+The back end is now serverless-ready:
+
+| File | Purpose |
+|---|---|
+| `src/app.js` | Express app (routes, CORS, error handler) — **no `app.listen()`** |
+| `index.js` | Long-running local server entry (`npm start` / `npm run dev`) |
+| `api/index.js` | Vercel function entry; exports the Express app |
+| `vercel.json` | Rewrites every request to the function |
+
+Steps:
+
+1. Push this folder to its own GitHub repository.
+2. Vercel → **Add New → Project** → import that repository.
+   - Framework Preset: **Other**
+   - Root Directory: repository root
+   - Build Command: leave empty (Vercel installs dependencies and bundles
+     `api/index.js`)
+   - Node: 20 or newer
+3. Add environment variables:
+
+   | Key | Value |
+   |---|---|
+   | `MONGODB_URI` | Atlas URI (`mongodb://` or `mongodb+srv://`) |
+   | `DB_NAME` | `studiospace` |
+   | `CORS_ORIGIN` | `https://studiospace-theta.vercel.app,http://localhost:3000` |
+   | `IMGBB_API_KEY` | optional — enables `/api/uploads` |
+
+   Do **not** set `PORT`; Vercel manages the port.
+4. Deploy and note the URL, for example
+   `https://studiospace-backend.vercel.app`.
+5. Verify:
+
+   ```bash
+   curl https://studiospace-backend.vercel.app/api/health
+   # {"ok":true,"service":"studiospace-api"}
+
+   curl -i https://studiospace-backend.vercel.app/api/wishlist
+   # 401 {"error":"Please sign in to continue."}
+   ```
+
+6. On the **frontend** Vercel project, set
+   `API_PROXY_TARGET=https://studiospace-backend.vercel.app` and redeploy.
+   The frontend proxies `/api/proxy/*` to this URL so the Better Auth cookie
+   works despite both apps being on separate `*.vercel.app` domains.
+
+Notes:
+
+- The API connects to MongoDB on the first request (see the connection
+  middleware in `src/app.js`) rather than using top-level `await`, so the
+  serverless module loads reliably and a failed connection can retry.
+- Vercel limits request bodies to **4.5 MB**; the API's 40 MB JSON limit only
+  applies on a normal host. Use Railway/Render (`npm start`) if large uploads
+  matter.
+- Serverless functions cold-start and open a Mongo connection per instance;
+  `src/db.js` caches the connection while the instance stays warm.
+- Atlas **Network Access** must allow `0.0.0.0/0` (Vercel egress IPs vary).
+
+---
+
 ## Quick reference — endpoint ↔ origin
 
 | Method | Endpoint (base `http://localhost:3001`) | Auth |
