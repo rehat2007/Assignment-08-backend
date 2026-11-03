@@ -18,6 +18,17 @@ let db;
 export async function connect() {
   if (db) return db;
 
+// ENV DIAGNOSTIC
+  console.log("ENV DIAGNOSTIC:", {
+    VERCEL: process.env.VERCEL,
+    NODE_ENV: process.env.NODE_ENV,
+    MONGODB_URI_EXISTS: Boolean(process.env.MONGODB_URI),
+    MONGO_VARIABLES: Object.keys(process.env).filter(
+      (key) => key.includes("MONGO")
+    ),
+  });
+
+
   if (!process.env.MONGODB_URI) {
     throw new Error(
       "MONGODB_URI is missing from the environment (locally: studiospace_back_end/.env; on Vercel: project Settings → Environment Variables)."
