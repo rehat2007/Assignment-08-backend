@@ -237,10 +237,10 @@ router.get("/:idOrSlug", async (req, res) => {
   });
 });
 
-/* ---------------------------------------------------------------------------
- * GET /api/studios/:idOrSlug/availability?date=YYYY-MM-DD — booked slots for
- * the booking modal's conflict checks (cancelled bookings free the day).
- * ------------------------------------------------------------------------- */
+
+ // GET /api/studios/:idOrSlug/availability?date=YYYY-MM-DD — booked slots for
+ // the booking modal's conflict checks (cancelled bookings free the day).
+
 router.get("/:idOrSlug/availability", async (req, res) => {
   const studio = await findStudio(req.params.idOrSlug);
   if (!studio) throw notFound("Studio not found.");
