@@ -26,7 +26,7 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN ?? DEFAULT_ORIGINS)
   .filter(Boolean);
 
 app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
-app.use(express.json({ limit: "40mb" }));
+app.use(express.json());
 
 // Health checks are registered before the database middleware so they answer
 // even when Mongo is unreachable — a 500 here would hide the real cause.
