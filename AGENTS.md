@@ -41,4 +41,4 @@ Run from this directory:
 - `CORS_ORIGIN` is a comma-separated list of exact origins including port. Do not set `PORT` on Vercel.
 - Relative ESM imports need the `.js` extension.
 
-`readme.md` is the authoritative setup/session/deployment walkthrough and endpoint contract; this file only covers what is easy to get wrong.
+`docs/SETUP.md` is the authoritative setup/session/deployment walkthrough and endpoint contract; `readme.md` is the project overview. This file only covers what is easy to get wrong.
